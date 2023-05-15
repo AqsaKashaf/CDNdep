@@ -102,10 +102,11 @@ def check_valid_country(code: str) -> str:
 
 def write_results(country, service, month, data):
     filename = f"{country}-{service}-{month}"
-    print(filename)
     f = open(filename,"a")
-    for (r,w),d in data.items():
-        f.write(f"{r},{','.join(d)}\n")
+
+    for (r,w),details_dict in data.items():
+        for (_,cdn), type in details_dict.items():
+            f.write(f"{r},{w},{cdn},{type}\n")
     f.close()
     
 def run_subprocess(command: list) -> str:

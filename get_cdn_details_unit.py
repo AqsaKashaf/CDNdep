@@ -52,7 +52,7 @@ def find_if_cdn_third(website, cdn, cname, soa_w=None, soa_p=None):
         return "Pvt"
     
     if(third == "unknown"):
-        if("cloudflare" in cdn or "cloudfront" in cdn or "fastly" in cdn or "akamai" in cdn or "azure" in cdn or "google" in cdn or"hinet" in cdn or "gocache" in cdn or "vtex" in cdn or "incapsula" in cdn or "azion" in cdn or "hubspot" in cdn or "edgecast" in cdn or "limelight" in cdn or "alibaba" in cdn or "reflectednetworks" in cdn or "g-core" in cdn or "sitelock" in cdn or "netlify" in cdn or "stackpath" in cdn or "tencent" in cdn or "baishancloud" in cdn or "edgecdnru" in cdn):
+        if("cloudflare" in cdn or "cloudfront" in cdn or "fastly" in cdn or "akamai" in cdn or "azure" in cdn or "google" in cdn or"hinet" in cdn or "gocache" in cdn or "vtex" in cdn or "incapsula" in cdn or "azion" in cdn or "hubspot" in cdn or "edgecast" in cdn or "limelight" in cdn or "alibaba" in cdn or "reflectednetworks" in cdn or "g-core" in cdn or "sitelock" in cdn or "netlify" in cdn or "stackpath" in cdn or "tencent" in cdn or "baishancloud" in cdn or "edgecdnru" in cdn or "bunnycdn" in cdn):
             return "Third"
   
     return third     
