@@ -1,17 +1,21 @@
 
 import subprocess
 import logging
+from cdn_utils import *
 
 log = logging.getLogger(__name__)
 
 
 
 def format_output(output: str) -> tuple:
-    output = output.split("\n")
-    # server = output[0].strip(".")
-    # contact = output[1].strip(".")
+    output = output.split(",")
+    result = []
+    for i in output:
+        if(not isIP(i)):
+            result.append(i.strip("."))
+    
 
-    return output
+    return result
 
 def get_cname(domain: str) -> tuple:
     output = None

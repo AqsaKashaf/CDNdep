@@ -2,12 +2,13 @@
 
 import sys
 
-from get_soa import *
-from get_cname import *
+
 from classification_utils import *
 import validators
 import json
 from cdn_utils import *
+from get_soa import *
+from get_cname import *
 import logging
 # output: rank,website,provider,providerType,optional
 
@@ -18,8 +19,8 @@ HAR_DIR="./harfiles"
 def find_if_cdn_third(website, cdn, cname, soa_w=None, soa_p=None):
 
     third = "unknown"
-    
-    if(match_TLD(website,cname)):
+    cname_domain = get_domain_from_subdomain(cname)
+    if(match_TLD(website,cname_domain)):
         return "Pvt"
 
     if("google" in website and "google" in cdn):
@@ -36,11 +37,11 @@ def find_if_cdn_third(website, cdn, cname, soa_w=None, soa_p=None):
     
     if("amazon" in website and "cloudfront" in cdn):
         return "Pvt"
-    if(inSAN(website,cname)):
+    if(inSAN(website,cname_domain)):
         return "Pvt"
 
     if(not soa_w): soa_w = get_SOA(website)
-    if(not soa_p): soa_p = get_SOA(cname)
+    if(not soa_p): soa_p = get_SOA(cname_domain)
 
     if(not match_SOA(soa_w, soa_p)):
         return "Third"
@@ -100,18 +101,18 @@ def match_CDN_cname(cdn_lib, cname):
     return None
 
 def find_CDN(internal_links, CDN_MAP):
-    cdns = defaultdict(list)
+    cdns = defaultdict(set)
+    checked_cnames = set()
     for link in internal_links:
-        matched_cdn = match_CDN_cname(CDN_MAP,link)
-        if(matched_cdn):
-            cdns[matched_cdn].append(link)
-            print(matched_cdn, link)
         cnames_link = get_cname(link)
-        print("cnames", cnames_link)
+        cnames_link.append(link)
         for cname in cnames_link:
-            matched_cdn = match_CDN_cname(CDN_MAP,cname)
-            if(matched_cdn):
-                cdns[matched_cdn].append(cname)
+            if(cname not in checked_cnames):
+                checked_cnames.add(cname)
+                matched_cdn = match_CDN_cname(CDN_MAP,cname)
+                if(matched_cdn):
+                    cdns[matched_cdn].add(cname)
+            
     return cdns
 
 def get_CDN_details(host: str, CDN_MAP: dict) -> dict :
@@ -126,21 +127,20 @@ def get_CDN_details(host: str, CDN_MAP: dict) -> dict :
         resources = read_resources(host, HAR_DIR)
         # remove_file(f"{HAR_DIR}/{host}.har")
         internal_resources = get_internal_resources(host, resources)
-        print(resources,internal_resources)
         cdns = find_CDN(internal_resources, CDN_MAP)
-        print(cdns)
         return cdns
 
     else:
         raise Exception("Invalid input")
 
 
-def classify(website, providers, cnames):
+def classify(website, provider, cnames):
 
     
     output = "unknown"
-    for p in providers:
-        output = find_if_cdn_third(website, p, cnames)
+    for c in cnames:
+        print(website, provider, c)
+        output = find_if_cdn_third(website, provider, c)
         if(output != "unknown"):
             break
     
@@ -161,12 +161,10 @@ def main():
 
 def find_and_classify(host: str, CDN_MAP: dict) -> tuple:
     details = get_CDN_details(host, CDN_MAP)
-    print(details)
+    # print(details)
     result = {}
     for cdn,cnames in details.items():
         output = classify(host, cdn, cnames)
-        print(output, cdn, cnames)
-        exit()
         if((host,cdn) in result):
             if(result[(host,cdn)] != output):
                 if(result[(host,cdn)] == "unknown"):

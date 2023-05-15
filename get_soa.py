@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 def format_output(output: str) -> tuple:
     output = output.split(" ")
+    print(output)
     server = output[0].strip(".")
     contact = output[1].strip(".")
 

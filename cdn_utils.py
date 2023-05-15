@@ -12,9 +12,19 @@ import dateutil.relativedelta
 import subprocess
 import pathlib
 
+
 log = logging.getLogger(__name__)
 
 
+
+
+def isIP(ip):
+    try:
+        socket.inet_aton(ip)
+        return True
+    except socket.error:
+        return False
+    
 def getcert(addr, timeout=None):
     """Retrieve server's certificate at the specified address (host, port)."""
     # it is similar to ssl.get_server_certificate() but it returns a dict
