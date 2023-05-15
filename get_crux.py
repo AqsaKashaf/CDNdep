@@ -4,7 +4,8 @@
 from google.cloud import bigquery
 import tldextract
 from pathlib import Path
-
+import logging
+log = logging.getLogger(__name__)
 from ca_utils import *
 
 def preprocess_crux(results):
@@ -27,17 +28,21 @@ def preprocess_crux(results):
 
 
 def query_crux(country, month):
-    client = bigquery.Client()
-    query = f"""
-        SELECT
-            DISTINCT origin,experimental.popularity.rank as rank
-        FROM `chrome-ux-report.country_{country}.{month}`
-        ORDER BY experimental.popularity.rank ASC
-        LIMIT 10000;
-    """
-    query_job = client.query(query)
-    results = query_job.result()  # Waits for job to complete.
-    return results
+    try:
+        client = bigquery.Client()
+        query = f"""
+            SELECT
+                DISTINCT origin,experimental.popularity.rank as rank
+            FROM `chrome-ux-report.country_{country}.{month}`
+            ORDER BY experimental.popularity.rank ASC
+            LIMIT 10000;
+        """
+        query_job = client.query(query)
+        results = query_job.result()  # Waits for job to complete.
+        return results
+    except Exception as e:
+        log.exception(f"Some error happened while querying bigquery for crux dataset, {str(e)}")
+        raise Exception(f"Some error happened while querying bigquery for crux dataset, {str(e)}")
 
 def read_crux_file(filename):
     f = open(filename,"r")

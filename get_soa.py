@@ -31,6 +31,6 @@ def get_SOA(domain: str) -> tuple:
             return format_output(output)
 
     except subprocess.CalledProcessError as e:
-        log.exception(domain + "," + str(e.output) + "\n")
+        log.exception("get SOA had an exception" + domain + "," + str(e) + "\n")
         return output
 

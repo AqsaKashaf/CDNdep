@@ -34,6 +34,6 @@ def get_cname(domain: str) -> tuple:
             return format_output(output)
 
     except subprocess.CalledProcessError as e:
-        log.exception(domain + "," + str(e.output) + "\n")
+        log.exception("get_cname resulted in an exception" + domain + "," + str(e.output) + "\n")
         return output
 

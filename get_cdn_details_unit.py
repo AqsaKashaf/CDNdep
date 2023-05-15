@@ -43,10 +43,10 @@ def find_if_cdn_third(website, cdn, cname, soa_w=None, soa_p=None):
     if(not soa_w): soa_w = get_SOA(website)
     if(not soa_p): soa_p = get_SOA(cname_domain)
 
-    if(not match_SOA(soa_w, soa_p)):
+    if(soa_w and soa_p and not match_SOA(soa_w, soa_p)):
         return "Third"
    
-    if(match_TLD_website_SOAprovider(website, soa_p)):
+    if(soa_p and match_TLD_website_SOAprovider(website, soa_p)):
         return "Pvt"
     if(match_loose_TLD(website,cname)):
         return "Pvt"
@@ -60,8 +60,8 @@ def find_if_cdn_third(website, cdn, cname, soa_w=None, soa_p=None):
 def read_resources(website, harfiles_path):
     website_resources = set()
   
-    harf = open(f"{harfiles_path}/{website}.har","r")
     try:
+        harf = open(f"{harfiles_path}/{website}.har","r")
         text = json.loads(harf.read())
         all_urls = text["log"]["entries"]
         website_resources.add("www."+website)
@@ -69,16 +69,19 @@ def read_resources(website, harfiles_path):
             rsrc = url["request"]["url"]
             rsrc_domain = get_hostname_from_url(rsrc)
             website_resources.add(rsrc_domain)
+        harf.close()
+    except FileNotFoundError as e:
+        log.exception(f"Har file for {website} not found, probably the get_har failed, {str(e)}")
     except Exception as e:
         log.exception(f"something happened while reading resources for {website}, {str(e)}")
-    harf.close()
+   
     return website_resources
 
 
 def get_har(website, HAR_DIR):
     output = run_subprocess(["node","get_har.js",website, HAR_DIR])
     if(output == -1):
-        raise Exception("Could not get har file")
+        log.exception("Could not get har file")
 
 def get_internal_resources(website,links):
     
@@ -131,7 +134,8 @@ def get_CDN_details(host: str, CDN_MAP: dict) -> dict :
         return cdns
 
     else:
-        raise Exception("Invalid input")
+        log.exception(f"Invalid input {host}")
+        raise Exception(f"Invalid input {host}")
 
 
 def classify(website, provider, cnames):
@@ -139,7 +143,6 @@ def classify(website, provider, cnames):
     
     output = "unknown"
     for c in cnames:
-        print(website, provider, c)
         output = find_if_cdn_third(website, provider, c)
         if(output != "unknown"):
             break
